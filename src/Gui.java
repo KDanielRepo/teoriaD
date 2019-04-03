@@ -1,5 +1,6 @@
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
+import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
@@ -22,6 +23,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferStrategy;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -38,6 +40,7 @@ public class Gui implements ActionListener {
     JButton calcBmi = new JButton("Oblicz Bmi");
     JButton showChart = new JButton("Pokaż Wykres");
     JButton showLogs = new JButton("Pokaż moje Dane");
+    JButton showCanvas = new JButton("Pokaż kanwy");
     Color bg = new Color(230, 230, 230);
     List<String> dates = new ArrayList<>();
     List<Number> bmis = new ArrayList<>();
@@ -50,7 +53,6 @@ public class Gui implements ActionListener {
     String userName;
     Dimension dimension;
     float bmi;
-
     public Gui() {
         bmiPane();
     }
@@ -87,14 +89,14 @@ public class Gui implements ActionListener {
             int i = JOptionPane.showOptionDialog(frame, "Jakiej jesteś Płci?", "Pytanie", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, wybor, wybor[1]);
             if (i == 0) {
                 userGender = "Male";
-            } else if(i == 1) {
+            } else if (i == 1) {
                 userGender = "Female";
-            }else{
+            } else {
                 System.exit(0);
             }
             wybor = null;
             userName = (String) JOptionPane.showInputDialog(frame, "Jak się nazywasz?", "pytanie", JOptionPane.PLAIN_MESSAGE, null, wybor, null);
-            if(userName == null){
+            if (userName == null) {
                 System.exit(0);
             }
         } else {
@@ -130,7 +132,9 @@ public class Gui implements ActionListener {
         showLogs.addActionListener(this);
         showLogs.setFont(new Font("New Times Roma", Font.PLAIN, 26));
         panel.add(showLogs);
-        panel.add(result);
+        showCanvas.addActionListener(this);
+        panel.add(showCanvas);
+        //panel.add(result);
         result.setBackground(bg);
         result.setFont(new Font("New Times Roma", Font.PLAIN, 26));
         result.setEditable(false);
@@ -147,19 +151,21 @@ public class Gui implements ActionListener {
         frame.setLocation(((int) dimension.getWidth() / 2) - frame.getWidth() / 2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
 
     }
-
     public void charts() {
         Platform.runLater(new Runnable() {
             @Override
             public void run(){
                 Stage mainStage = new Stage();
-                mainStage.setTitle("Line Chart Sample");
-                final NumberAxis x = new NumberAxis();
-                x.setLabel("Dni");
-                final NumberAxis y = new NumberAxis();
+                mainStage.setTitle("Wykres");
+                NumberAxis x = new NumberAxis();
+                x.setLabel("Pomiary");
+                NumberAxis y = new NumberAxis();
                 y.setLabel("Bmi");
                 LineChart<Number, Number> lineChart = new LineChart<Number, Number>(x, y);
                 XYChart.Series<Number, Number> series = new XYChart.Series<Number, Number>();
+                Scene scene = new Scene(new Group());
+                /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
+                klasa File rzucają wyjątkek Wejścia/Wyjścia*/
                 try {
                     File file = new File("./bmi.xml");
                     int i;
@@ -176,17 +182,19 @@ public class Gui implements ActionListener {
                         NodeList list1 = list.getChildNodes();
                         series.getData().add(new XYChart.Data<Number, Number>(i+1, Float.parseFloat(getNodeValue("Bmi", list1))));
                     }
-                    description.setText("A oto Twoje postępy z ostatnich " + i + " dni");
+                    description.setText("A oto Twoje postępy z ostatnich " + i + " pomiarów");
                 } catch (ParserConfigurationException | SAXException | IOException pce) {
                     pce.printStackTrace();
                 }
                 lineChart.getData().add(series);
-                Scene scene = new Scene(lineChart, 500, 400);
+                ((Group) scene.getRoot()).getChildren().add(lineChart);
                 chart.setScene(scene);
             }
         });
     }
     public void getData(){
+        /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
+        klasa File rzucają wyjątkek Wejścia/Wyjścia*/
         try {
             File file = new File("./bmi.xml");
             int i;
@@ -209,6 +217,8 @@ public class Gui implements ActionListener {
         }
     }
     public void getPerson() {
+        /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
+        klasa File rzucają wyjątkek Wejścia/Wyjścia*/
         try {
             File file = new File("./bmi.xml");
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -220,12 +230,13 @@ public class Gui implements ActionListener {
             NodeList nodeList = statistics.getChildNodes();
             userName = getNodeValue("Name", nodeList);
             userGender = getNodeValue("Gender", nodeList);
-            System.out.println(userGender);
         } catch (ParserConfigurationException | SAXException | IOException pse) {
             pse.printStackTrace();
         }
     }
     public void files() {
+        /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
+        klasa File rzucają wyjątkek Wejścia/Wyjścia*/
         try {
             String test = Float.toString(bmi);
             File file = new File("./bmi.xml");
@@ -310,6 +321,7 @@ public class Gui implements ActionListener {
         String name = e.getActionCommand();
         switch (name) {
             case "Oblicz Bmi":
+                //try-catch użyty został ponieważ chcę zabezpieczyć aplikację przed wprowadzeniem źle sformatowanych wartości np: gdyby ktoś wprowadził zamiast 1.80, E32,0
                 try {
                     float heightTest = Float.parseFloat(height.getText());
                     int weightTest = Integer.parseInt(weight.getText());
@@ -389,7 +401,7 @@ public class Gui implements ActionListener {
                 break;
             case "Pokaż Wykres":
                 JFrame chartFrame = new JFrame("Wykres");
-                chartFrame.setSize(frame.getWidth()-(frame.getWidth()/3),frame.getHeight()-(frame.getHeight()/3));
+                chartFrame.setSize(frame.getWidth()-(frame.getWidth()/4),frame.getHeight()-(frame.getHeight()/4));
                 chartFrame.setLocation(((int) dimension.getWidth()/2) + frame.getWidth()/2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
                 chartFrame.add(chart);
                 charts();
@@ -403,6 +415,25 @@ public class Gui implements ActionListener {
                 for(int i = 0;i<dates.size();i++){
                     description.setText(description.getText()+" "+dates.get(i)+": "+bmis.get(i)+"\n");
                 }
+                break;
+            case "Pokaż kanwy":
+                JFrame ramka = new JFrame();
+                ramka.setSize(400,400);
+                Canvas canvas = new Canvas(){
+                    public void paint(Graphics g){
+                        g.setColor(Color.red);
+                        g.drawOval(40,40,40,40);
+                        g.fillOval(40,40,40,40);
+                        g.drawOval(100,40,40,40);
+                        g.fillOval(100,40,40,40);
+                        g.drawOval(60,120,100,40);
+                    }
+                };
+                canvas.setSize(200,200);
+                canvas.setVisible(true);
+                ramka.add(canvas);
+                ramka.setVisible(true);
+                ramka.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 break;
         }
     }
