@@ -33,7 +33,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class Gui implements ActionListener {
+public class Gui implements ActionListener,Runnable {
     JFrame frame = new JFrame("Graficzny interface dla Bmi");
     JPanel panel = new JPanel();
     JFXPanel chart = new JFXPanel();
@@ -56,6 +56,7 @@ public class Gui implements ActionListener {
     public Gui() {
         bmiPane();
     }
+
 
     public Node getNode(String tagName, NodeList nodes) {
         for (int i = 0; i < nodes.getLength(); i++) {
@@ -155,8 +156,6 @@ public class Gui implements ActionListener {
         Platform.runLater(new Runnable() {
             @Override
             public void run(){
-                Stage mainStage = new Stage();
-                mainStage.setTitle("Wykres");
                 NumberAxis x = new NumberAxis();
                 x.setLabel("Pomiary");
                 NumberAxis y = new NumberAxis();
@@ -317,6 +316,39 @@ public class Gui implements ActionListener {
     }
 
     @Override
+    public void run() {
+        rysuj();
+    }
+    public void rysuj(){
+        JFrame ramka = new JFrame();
+        ramka.setSize(400,600);
+        ramka.setVisible(true);
+        Canvas canvas = new Canvas(){
+            public void paint(Graphics g) {
+                try {
+                    for (int i = 0; i < 40; i++) {
+                        Thread.sleep(100);
+                        //g.drawOval(40,40,i,i);
+                        g.fillOval(40, 40, i, i);
+                    }
+                /*g.setColor(Color.red);
+                g.drawOval(40,40,40,40);
+                g.fillOval(40,40,40,40);
+                g.drawOval(100,40,40,40);
+                g.fillOval(100,40,40,40);
+                g.drawOval(60,120,100,40);*/
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("hehe");
+            }
+        };
+        canvas.setSize(200,300);
+        ramka.add(canvas);
+        ramka.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    }
+
+    @Override
     public void actionPerformed(ActionEvent e) {
         String name = e.getActionCommand();
         switch (name) {
@@ -401,9 +433,14 @@ public class Gui implements ActionListener {
                 break;
             case "Pokaż Wykres":
                 JFrame chartFrame = new JFrame("Wykres");
+                chartFrame.setLayout(new GridLayout(2,1));
+                JPanel first = new JPanel();
+                JPanel second = new JPanel();
                 chartFrame.setSize(frame.getWidth()-(frame.getWidth()/4),frame.getHeight()-(frame.getHeight()/4));
                 chartFrame.setLocation(((int) dimension.getWidth()/2) + frame.getWidth()/2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
                 chartFrame.add(chart);
+                chartFrame.add(first);
+                chartFrame.add(second);
                 charts();
                 chart.setVisible(true);
                 chartFrame.setVisible(true);
@@ -417,23 +454,8 @@ public class Gui implements ActionListener {
                 }
                 break;
             case "Pokaż kanwy":
-                JFrame ramka = new JFrame();
-                ramka.setSize(400,400);
-                Canvas canvas = new Canvas(){
-                    public void paint(Graphics g){
-                        g.setColor(Color.red);
-                        g.drawOval(40,40,40,40);
-                        g.fillOval(40,40,40,40);
-                        g.drawOval(100,40,40,40);
-                        g.fillOval(100,40,40,40);
-                        g.drawOval(60,120,100,40);
-                    }
-                };
-                canvas.setSize(200,200);
-                canvas.setVisible(true);
-                ramka.add(canvas);
-                ramka.setVisible(true);
-                ramka.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+                Thread test = new Thread(this);
+                test.start();
                 break;
         }
     }
