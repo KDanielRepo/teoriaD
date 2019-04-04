@@ -33,14 +33,14 @@ import java.util.Date;
 import java.util.List;
 
 
-public class Gui implements ActionListener,Runnable {
+public class Gui implements ActionListener, Runnable {
     JFrame frame = new JFrame("Graficzny interface dla Bmi");
     JPanel panel = new JPanel();
     JFXPanel chart = new JFXPanel();
     JButton calcBmi = new JButton("Oblicz Bmi");
     JButton showChart = new JButton("Pokaż Wykres");
     JButton showLogs = new JButton("Pokaż moje Dane");
-    JButton showCanvas = new JButton("Pokaż kanwy");
+    JButton showCanvas = new JButton("Wizualizuj postęp");
     Color bg = new Color(230, 230, 230);
     List<String> dates = new ArrayList<>();
     List<Number> bmis = new ArrayList<>();
@@ -53,6 +53,7 @@ public class Gui implements ActionListener,Runnable {
     String userName;
     Dimension dimension;
     float bmi;
+
     public Gui() {
         bmiPane();
     }
@@ -134,6 +135,7 @@ public class Gui implements ActionListener,Runnable {
         showLogs.setFont(new Font("New Times Roma", Font.PLAIN, 26));
         panel.add(showLogs);
         showCanvas.addActionListener(this);
+        showCanvas.setFont(new Font("New Times Roma", Font.PLAIN, 26));
         panel.add(showCanvas);
         //panel.add(result);
         result.setBackground(bg);
@@ -152,10 +154,11 @@ public class Gui implements ActionListener,Runnable {
         frame.setLocation(((int) dimension.getWidth() / 2) - frame.getWidth() / 2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
 
     }
+
     public void charts() {
         Platform.runLater(new Runnable() {
             @Override
-            public void run(){
+            public void run() {
                 NumberAxis x = new NumberAxis();
                 x.setLabel("Pomiary");
                 NumberAxis y = new NumberAxis();
@@ -179,7 +182,7 @@ public class Gui implements ActionListener,Runnable {
                     for (i = 0; i < nodeList.getLength(); i++) {
                         Node list = getNode("Day" + i, days.getChildNodes());
                         NodeList list1 = list.getChildNodes();
-                        series.getData().add(new XYChart.Data<Number, Number>(i+1, Float.parseFloat(getNodeValue("Bmi", list1))));
+                        series.getData().add(new XYChart.Data<Number, Number>(i + 1, Float.parseFloat(getNodeValue("Bmi", list1))));
                     }
                     description.setText("A oto Twoje postępy z ostatnich " + i + " pomiarów");
                 } catch (ParserConfigurationException | SAXException | IOException pce) {
@@ -191,7 +194,8 @@ public class Gui implements ActionListener,Runnable {
             }
         });
     }
-    public void getData(){
+
+    public void getData() {
         /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
         klasa File rzucają wyjątkek Wejścia/Wyjścia*/
         try {
@@ -208,13 +212,14 @@ public class Gui implements ActionListener,Runnable {
             for (i = 0; i < nodeList.getLength(); i++) {
                 Node list = getNode("Day" + i, days.getChildNodes());
                 NodeList list1 = list.getChildNodes();
-                dates.add(getNodeValue("Date",list1));
-                bmis.add(Float.parseFloat(getNodeValue("Bmi",list1)));
+                dates.add(getNodeValue("Date", list1));
+                bmis.add(Float.parseFloat(getNodeValue("Bmi", list1)));
             }
         } catch (ParserConfigurationException | SAXException | IOException pce) {
             pce.printStackTrace();
         }
     }
+
     public void getPerson() {
         /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
         klasa File rzucają wyjątkek Wejścia/Wyjścia*/
@@ -233,6 +238,7 @@ public class Gui implements ActionListener,Runnable {
             pse.printStackTrace();
         }
     }
+
     public void files() {
         /*try-catch został użyty ponieważ parser xml rzuca wyjątek mówiący o problemie z jego konfiguracją i wyjątek rzucany gdy napotka problemy z rozparsowaniem pliku
         klasa File rzucają wyjątkek Wejścia/Wyjścia*/
@@ -319,33 +325,60 @@ public class Gui implements ActionListener,Runnable {
     public void run() {
         rysuj();
     }
-    public void rysuj(){
+
+    public void rysuj() {
         JFrame ramka = new JFrame();
-        ramka.setSize(400,600);
+        ramka.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+        ramka.setSize(400, 300);
+        ramka.setLocation(((int) dimension.getWidth() / 2) + frame.getWidth() / 2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
         ramka.setVisible(true);
-        Canvas canvas = new Canvas(){
+        getData();
+        float a = (float) bmis.get(bmis.size() - 1);
+        float b = (float) bmis.get(bmis.size() - 2);
+        Canvas canvas = new Canvas() {
             public void paint(Graphics g) {
+                //try-catch został użyty ponieważ metoda statyczna "sleep" może rzucić wyjątek InterruptedException
                 try {
-                    for (int i = 0; i < 40; i++) {
-                        Thread.sleep(100);
-                        //g.drawOval(40,40,i,i);
-                        g.fillOval(40, 40, i, i);
+                    if (Float.compare(a, b) > 0) {
+                        for (int i = 0; i < 20; i++) {
+                            g.drawLine(80, 120, 50, 160);
+                            g.drawLine(80, 120, 110, 160);
+                            g.drawLine(80, 120, 80, 60);
+                            g.drawOval(65, 30, 30, 30);
+                            g.drawLine(80, 60, 110, 110);
+                            g.drawLine(80, 60, 50, 110);
+                            Thread.sleep(100);
+                            //g.drawOval(40,40,i,i);
+                            g.fillOval(80 - i / 2, 90 - i / 2, i, i * 2);
+                            g.drawString("Ważysz więcej niż ostatnio",150,60);
+                        }
+                    } else if (Float.compare(a, b) == 0) {
+                        g.drawLine(80, 120, 50, 160);
+                        g.drawLine(80, 120, 110, 160);
+                        g.drawLine(80, 120, 80, 60);
+                        g.drawOval(65, 30, 30, 30);
+                        g.drawLine(80, 60, 110, 110);
+                        g.drawLine(80, 60, 50, 110);
+                        g.drawString("brak zmian",150,60);
+                    } else {
+                        for (int i = 20; i > 0; i--) {
+                            g.drawLine(80, 120, 50, 160);
+                            g.drawLine(80, 120, 110, 160);
+                            g.drawLine(80, 120, 80, 60);
+                            g.drawOval(65, 30, 30, 30);
+                            g.drawLine(80, 60, 110, 110);
+                            g.drawLine(80, 60, 50, 110);
+                            Thread.sleep(100);
+                            g.drawString("brawo, udalo ci się schudnąć!",150,60);
+                        }
                     }
-                /*g.setColor(Color.red);
-                g.drawOval(40,40,40,40);
-                g.fillOval(40,40,40,40);
-                g.drawOval(100,40,40,40);
-                g.fillOval(100,40,40,40);
-                g.drawOval(60,120,100,40);*/
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                System.out.println("hehe");
             }
         };
-        canvas.setSize(200,300);
+        canvas.setSize(400, 300);
         ramka.add(canvas);
-        ramka.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
     @Override
@@ -433,27 +466,25 @@ public class Gui implements ActionListener,Runnable {
                 break;
             case "Pokaż Wykres":
                 JFrame chartFrame = new JFrame("Wykres");
-                chartFrame.setLayout(new GridLayout(2,1));
+                chartFrame.setLayout(new FlowLayout());
                 JPanel first = new JPanel();
-                JPanel second = new JPanel();
-                chartFrame.setSize(frame.getWidth()-(frame.getWidth()/4),frame.getHeight()-(frame.getHeight()/4));
-                chartFrame.setLocation(((int) dimension.getWidth()/2) + frame.getWidth()/2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
+                chartFrame.setSize(frame.getWidth() - (frame.getWidth() / 4), frame.getHeight() - (frame.getHeight() / 4));
+                chartFrame.setLocation(((int) dimension.getWidth() / 2) + frame.getWidth() / 2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
                 chartFrame.add(chart);
                 chartFrame.add(first);
-                chartFrame.add(second);
                 charts();
                 chart.setVisible(true);
                 chartFrame.setVisible(true);
                 break;
             case "Pokaż moje Dane":
                 description.setText("A oto twoje dane do tej pory: ");
-                description.setText(description.getText()+" \n");
+                description.setText(description.getText() + " \n");
                 getData();
-                for(int i = 0;i<dates.size();i++){
-                    description.setText(description.getText()+" "+dates.get(i)+": "+bmis.get(i)+"\n");
+                for (int i = 0; i < dates.size(); i++) {
+                    description.setText(description.getText() + " " + dates.get(i) + ": " + bmis.get(i) + "\n");
                 }
                 break;
-            case "Pokaż kanwy":
+            case "Wizualizuj postęp":
                 Thread test = new Thread(this);
                 test.start();
                 break;
