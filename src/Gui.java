@@ -26,21 +26,27 @@ import java.awt.event.*;
 import java.awt.image.BufferStrategy;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
 
 
 public class Gui implements ActionListener, Runnable {
-    JFrame frame = new JFrame("Graficzny interface dla Bmi");
+
+    Locale english = new Locale("en","GB");
+    Locale polish = new Locale("pl","PL");
+    Locale russian = new Locale("ru","RU");
+    ResourceBundle text = ResourceBundle.getBundle("UI",polish);
+    JFrame frame = new JFrame(text.getString("title"));
     JPanel panel = new JPanel();
     JFXPanel chart = new JFXPanel();
-    JButton calcBmi = new JButton("Oblicz Bmi");
-    JButton showChart = new JButton("Pokaż Wykres");
-    JButton showLogs = new JButton("Pokaż moje Dane");
-    JButton showCanvas = new JButton("Wizualizuj postęp");
+    JButton calcBmi = new JButton(text.getString("calculate_button"));
+    JButton showChart = new JButton(text.getString("chart_button"));
+    JButton showLogs = new JButton(text.getString("data_button"));
+    JButton showCanvas = new JButton(text.getString("visualize_button"));
     Color bg = new Color(230, 230, 230);
     List<String> dates = new ArrayList<>();
     List<Number> bmis = new ArrayList<>();
@@ -87,8 +93,8 @@ public class Gui implements ActionListener, Runnable {
     public void bmiPane() {
         File file = new File("./bmi.xml");
         if (!file.exists()) {
-            Object[] wybor = {"Mężczyzna", "Kobieta"};
-            int i = JOptionPane.showOptionDialog(frame, "Jakiej jesteś Płci?", "Pytanie", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, wybor, wybor[1]);
+            Object[] wybor = {text.getString("male"), text.getString("female")};
+            int i = JOptionPane.showOptionDialog(frame, text.getString("gender"), text.getString("question"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, wybor, wybor[1]);
             if (i == 0) {
                 userGender = "Male";
             } else if (i == 1) {
@@ -97,13 +103,13 @@ public class Gui implements ActionListener, Runnable {
                 System.exit(0);
             }
             wybor = null;
-            userName = (String) JOptionPane.showInputDialog(frame, "Jak się nazywasz?", "pytanie", JOptionPane.PLAIN_MESSAGE, null, wybor, null);
+            userName = (String) JOptionPane.showInputDialog(frame, text.getString("name"), text.getString("question"), JOptionPane.PLAIN_MESSAGE, null, wybor, null);
             if (userName == null) {
                 System.exit(0);
             }
         } else {
             getPerson();
-            description.setText("Witaj ponownie " + userName);
+            description.setText(text.getString("welcome")+ " " + userName);
         }
         calcBmi.addActionListener(this);
         dimension = Toolkit.getDefaultToolkit().getScreenSize();
@@ -111,42 +117,42 @@ public class Gui implements ActionListener, Runnable {
         panel.setLayout(new GridLayout(5, 2));
         frame.setVisible(true);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        JLabel heightText = new JLabel("Podaj swój wzrost w [m]: ");
-        heightText.setFont(new Font("New Times Roma", Font.PLAIN, 20));
-        JLabel weightText = new JLabel("Podaj swoją wagę w [kg]: ");
-        weightText.setFont(new Font("New Times Roma", Font.PLAIN, 20));
-        JLabel ageText = new JLabel("Ile masz lat?: ");
-        ageText.setFont(new Font("New Times Roma", Font.PLAIN, 20));
+        JLabel heightText = new JLabel(text.getString("height"));
+        heightText.setFont(new Font("Arial MS Unicode", Font.PLAIN, 20));
+        JLabel weightText = new JLabel(text.getString("weight"));
+        weightText.setFont(new Font("Arial MS Unicode", Font.PLAIN, 20));
+        JLabel ageText = new JLabel(text.getString("age"));
+        ageText.setFont(new Font("Arial MS Unicode", Font.PLAIN, 20));
         panel.add(heightText);
         panel.add(height);
-        height.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        height.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         panel.add(weightText);
         panel.add(weight);
         panel.add(ageText);
         panel.add(age);
-        age.setFont(new Font("New Times Roma", Font.PLAIN, 26));
-        weight.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        age.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
+        weight.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         showChart.addActionListener(this);
         panel.add(showChart);
-        showChart.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        showChart.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         panel.add(calcBmi);
-        calcBmi.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        calcBmi.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         showLogs.addActionListener(this);
-        showLogs.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        showLogs.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         panel.add(showLogs);
         showCanvas.addActionListener(this);
-        showCanvas.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        showCanvas.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         panel.add(showCanvas);
         //panel.add(result);
         result.setBackground(bg);
-        result.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        result.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         result.setEditable(false);
         frame.add(panel);
         JScrollPane scrollPane = new JScrollPane(description);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         frame.add(scrollPane);
         description.setBackground(bg);
-        description.setFont(new Font("New Times Roma", Font.PLAIN, 26));
+        description.setFont(new Font("Arial MS Unicode", Font.PLAIN, 26));
         description.setLineWrap(true);
         description.setEditable(false);
         frame.setSize(700, 600);
@@ -332,14 +338,10 @@ public class Gui implements ActionListener, Runnable {
         ramka.setSize(400, 300);
         ramka.setLocation(((int) dimension.getWidth() / 2) + frame.getWidth() / 2, (int) dimension.getHeight() / 2 - frame.getHeight() / 2);
         ramka.setVisible(true);
-        getData();
-        float a = (float) bmis.get(bmis.size() - 1);
-        float b = (float) bmis.get(bmis.size() - 2);
         Canvas canvas = new Canvas() {
             public void paint(Graphics g) {
                 //try-catch został użyty ponieważ metoda statyczna "sleep" może rzucić wyjątek InterruptedException
                 try {
-                    if (Float.compare(a, b) > 0) {
                         for (int i = 0; i < 20; i++) {
                             g.drawLine(80, 120, 50, 160);
                             g.drawLine(80, 120, 110, 160);
@@ -352,26 +354,6 @@ public class Gui implements ActionListener, Runnable {
                             g.fillOval(80 - i / 2, 90 - i / 2, i, i * 2);
                             g.drawString("Ważysz więcej niż ostatnio",150,60);
                         }
-                    } else if (Float.compare(a, b) == 0) {
-                        g.drawLine(80, 120, 50, 160);
-                        g.drawLine(80, 120, 110, 160);
-                        g.drawLine(80, 120, 80, 60);
-                        g.drawOval(65, 30, 30, 30);
-                        g.drawLine(80, 60, 110, 110);
-                        g.drawLine(80, 60, 50, 110);
-                        g.drawString("brak zmian",150,60);
-                    } else {
-                        for (int i = 20; i > 0; i--) {
-                            g.drawLine(80, 120, 50, 160);
-                            g.drawLine(80, 120, 110, 160);
-                            g.drawLine(80, 120, 80, 60);
-                            g.drawOval(65, 30, 30, 30);
-                            g.drawLine(80, 60, 110, 110);
-                            g.drawLine(80, 60, 50, 110);
-                            Thread.sleep(100);
-                            g.drawString("brawo, udalo ci się schudnąć!",150,60);
-                        }
-                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -381,9 +363,12 @@ public class Gui implements ActionListener, Runnable {
         ramka.add(canvas);
     }
 
+
     @Override
     public void actionPerformed(ActionEvent e) {
         String name = e.getActionCommand();
+        System.out.println(name);
+        //Zamien switch na If
         switch (name) {
             case "Oblicz Bmi":
                 //try-catch użyty został ponieważ chcę zabezpieczyć aplikację przed wprowadzeniem źle sformatowanych wartości np: gdyby ktoś wprowadził zamiast 1.80, E32,0
@@ -392,76 +377,75 @@ public class Gui implements ActionListener, Runnable {
                     int weightTest = Integer.parseInt(weight.getText());
                     int ageTest = Integer.parseInt(age.getText());
                 } catch (NumberFormatException ec) {
-                    description.setText("Jedno z pól zostało uzupełnione w niepoprawnym formacie, proszę zapisać wzrost w podanym formacie np.: 1.67 oraz wagę i wiek liczbami całkowitymi bez żadnych liter");
+                    description.setText(text.getString("nfe"));
                     return;
                 }
                 if (height.getText().isEmpty() | weight.getText().isEmpty() | age.getText().isEmpty()) {
-                    description.setText("Proszę uzupełnić puste pola");
+                    description.setText(text.getString("empty"));
                     return;
                 }
-                if (Float.parseFloat(height.getText()) > 2.80 | Float.parseFloat(height.getText()) < 0.50) {
+                /*if (Float.parseFloat(height.getText()) > 2.80 | Float.parseFloat(height.getText()) < 0.50) {
                     description.setText("Chyba został podany niepoprawyny wzrost...");
                     return;
                 }
                 if (Integer.parseInt(weight.getText()) > 400 | Integer.parseInt(weight.getText()) < 20) {
                     description.setText("Chyba została podana nieprawidłowa waga...");
                     return;
-                }
+                }*/
                 bmi = Integer.parseInt(weight.getText()) / (Float.parseFloat(height.getText()) * Float.parseFloat(height.getText()));
                 result.setText("Twoje Bmi to: " + bmi);
                 int lata = Integer.parseInt(age.getText());
                 if (userGender.equals("Female")) {
                     if (lata > 15) {
-                        Object[] wybor = {"Nie", "Tak"};
-                        int i = JOptionPane.showOptionDialog(frame, "Czy jest Pani obecnie w ciąży?", "Pytanie", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, wybor, wybor[1]);
-                        System.out.println(i);
+                        Object[] wybor = {text.getString("no"), text.getString("yes")};
+                        int i = JOptionPane.showOptionDialog(frame, text.getString("pregnant"), text.getString("question"), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, wybor, wybor[1]);
                         if (i == 1) {
-                            result.setText("Brak");
-                            description.setText("Indeks Bmi nie będzie wyliczony poprawnie dla kobiety w ciąży");
+                            result.setText("NaN");
+                            description.setText(text.getString("pregnant_result"));
                             return;
                         }
                     }
                     if (bmi <= 18.4) {
-                        description.setText("Niedowaga. Powinna Pani jeść więcej");
+                        description.setText(text.getString("underweight_f"));
                     } else if (bmi > 18.4 & bmi <= 24.9) {
-                        description.setText("Bmi w normie. Aby zachować obecny stan rzeczy należy odżywiać się zdrowo oraz wykonywać przynajmniej 30 min ćwiczeń");
+                        description.setText(text.getString("normal_f"));
                     } else if (bmi > 24.9 & bmi <= 29.9) {
-                        description.setText("Nadwaga. Należało by ograniczyć spożywanie węglowodanów oraz cukrów oraz zwiększyć ilość aktywności fizycznej. W razie dalszych problemów zalecana jest konsultacja z lekarzem dietetykiem");
+                        description.setText(text.getString("overweight_f"));
                     } else if (bmi > 29.9 & bmi <= 34.9) {
-                        description.setText("Otyłość. Zalecane jest zrezygnować ze spożywania węglowodanów oraz wszelkich cukrów. Wizyta u dietetyka jest tutaj wysoce zalecana");
+                        description.setText(text.getString("obesity_f"));
                     } else if (bmi > 34.9 & bmi <= 39.9) {
-                        description.setText("Otyłość 2 stopnia. Obecna waga zagraża Pani życiu lub zdrowiu, należy odwiedzić dietetyka który omówi z Pania dalsze kroki w celu uzyskania zdrowej wagi");
+                        description.setText(text.getString("obesity_two_f"));
                     } else if (bmi > 39.9) {
-                        description.setText("Otyłość olbrzymia. Obecna waga zagraża Pani życiu lub zdrowiu, należy odwiedzić dietetyka który omówi z Pania dalsze kroki w celu uzyskania zdrowej wagi");
+                        description.setText(text.getString("obesity_giant_f"));
                     }
                 } else if (userGender.equals("Male")) {
                     description.setText("Pana Bmi to: " + bmi);
                     if (bmi <= 18.4) {
-                        description.setText("Niedowaga. Powinien Pan jeść więcej");
+                        description.setText(text.getString("underweight_m"));
                     } else if (bmi > 18.4 & bmi <= 24.9) {
-                        description.setText("Bmi w normie. Aby zachować obecny stan rzeczy należy odżywiać się zdrowo oraz wykonywać przynajmniej 30 min ćwiczeń");
+                        description.setText(text.getString("normal_m"));
                     } else if (bmi > 24.9 & bmi <= 29.9) {
-                        description.setText("Nadwaga. Należało by ograniczyć spożywanie węglowodanów oraz cukrów oraz zwiększyć ilość aktywności fizycznej. W razie dalszych problemów zalecana jest konsultacja z lekarzem dietetykiem");
+                        description.setText(text.getString("overweight_m"));
                     } else if (bmi > 29.9 & bmi <= 34.9) {
-                        description.setText("Otyłość. Zalecane jest zrezygnować ze spożywania węglowodanów oraz wszelkich cukrów. Wizyta u dietetyka jest tutaj wysoce zalecana");
+                        description.setText(text.getString("obesity_m"));
                     } else if (bmi > 34.9 & bmi <= 39.9) {
-                        description.setText("Otyłość 2 stopnia. Obecna waga zagraża Pana życiu lub zdrowiu, należy odwiedzić dietetyka który omówi z Panem dalsze kroki w celu uzyskania zdrowej wagi");
+                        description.setText(text.getString("obesity_two_m"));
                     } else if (bmi > 39.9) {
-                        description.setText("Otyłość olbrzymia. Obecna waga zagraża Pana życiu lub zdrowiu, należy odwiedzić dietetyka który omówi z Panem dalsze kroki w celu uzyskania zdrowej wagi");
+                        description.setText(text.getString("obesity_giant_m"));
                     }
                 }
                 if (lata > 59 & lata < 120) {
                     if (userGender.equals("Female")) {
-                        description.setText("Wskaźnik Bmi dla osoby w Pani wieku nie może zostać poprawnie wyliczone. Wraz z wiekiem maleje masa mięśni i kości przez co indeks Bmi może zostać obliczony niepoprawnie");
+                        description.setText((text.getString("old_f")));
 
                     } else if (userGender.equals("Male")) {
-                        description.setText("Wskaźnik Bmi dla osoby w Pana wieku nie może zostać poprawnie wyliczone. Wraz z wiekiem maleje masa mięśni i kości przez co indeks Bmi może zostać obliczony niepoprawnie");
+                        description.setText((text.getString("old_m")));
                     }
                 } else if (lata < 18) {
-                    description.setText("Indeks Bmi wyliczany jest poprawnie dla osób dorosłych. Dla dzieci i młodzieży mimo tego że wyliczenia są podobne to kryteria są ustawiane inaczej z kilku powodów");
-                } else if (lata >= 120) {
+                    description.setText((text.getString("underage")));
+                } /*else if (lata >= 120) {
                     description.setText("Chyba podany został trochę zawyżony wiek...");
-                }
+                }*/
                 files();
                 break;
             case "Pokaż Wykres":
